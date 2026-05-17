@@ -1,0 +1,6 @@
+- name: SSH repair only
+  hosts: debian
+  become: yes
+
+  roles:
+    - ssh_repair

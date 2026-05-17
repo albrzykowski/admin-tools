@@ -1,0 +1,11 @@
+- name: Ensure SSH service is enabled
+  systemd:
+    name: ssh
+    enabled: yes
+    state: started
+
+- name: Reinstall OpenSSH server (safe repair)
+  apt:
+    name: openssh-server
+    state: present
+    update_cache: yes
