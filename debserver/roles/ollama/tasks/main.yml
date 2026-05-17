@@ -1,0 +1,14 @@
+- name: Install Ollama (official script)
+  shell: curl -fsSL https://ollama.com/install.sh | sh
+  args:
+    creates: /usr/local/bin/ollama
+
+- name: Enable and start Ollama service
+  systemd:
+    name: ollama
+    enabled: yes
+    state: started
+
+- name: Ensure Ollama listens on localhost (default API)
+  debug:
+    msg: "Ollama API available on http://localhost:11434"

@@ -1,0 +1,10 @@
+- name: Create main data directory
+  file:
+    path: /data
+    state: directory
+    mode: '0777'
+
+- name: Ensure /data is writable for all users (simple setup)
+  file:
+    path: /data
+    mode: '0777'

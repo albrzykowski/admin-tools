@@ -1,0 +1,21 @@
+- name: Install Samba
+  apt:
+    name: samba
+    state: present
+
+- name: Configure Samba share for /data
+  blockinfile:
+    path: /etc/samba/smb.conf
+    block: |
+      [data]
+      path = /data
+      browseable = yes
+      read only = no
+      guest ok = yes
+      force user = root
+
+- name: Restart Samba service
+  systemd:
+    name: smbd
+    state: restarted
+    enabled: yes

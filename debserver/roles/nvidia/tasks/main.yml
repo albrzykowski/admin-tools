@@ -1,0 +1,10 @@
+- name: Install NVIDIA driver + firmware
+  apt:
+    name:
+      - nvidia-driver
+      - firmware-misc-nonfree
+    state: present
+
+- name: Reboot recommended after NVIDIA install
+  debug:
+    msg: "Reboot system after first NVIDIA driver installation"

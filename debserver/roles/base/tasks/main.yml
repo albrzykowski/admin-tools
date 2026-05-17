@@ -1,0 +1,14 @@
+- name: Update apt cache and upgrade system
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install base packages
+  apt:
+    name:
+      - curl
+      - git
+      - rsync
+      - htop
+      - vim
+    state: present

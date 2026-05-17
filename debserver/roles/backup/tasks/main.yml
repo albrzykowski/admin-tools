@@ -1,0 +1,19 @@
+- name: Install rsync
+  apt:
+    name: rsync
+    state: present
+
+- name: Create backup script
+  copy:
+    dest: /usr/local/bin/backup-data.sh
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      rsync -avh /data/ user@backup:/backup/
+
+- name: Create cron job for daily backup
+  cron:
+    name: "daily data backup"
+    hour: "3"
+    minute: "0"
+    job: "/usr/local/bin/backup-data.sh"

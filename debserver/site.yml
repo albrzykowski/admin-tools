@@ -1,0 +1,11 @@
+- name: AI server setup (Debian headless GPU + storage)
+  hosts: debian
+  become: yes
+
+  roles:
+    - base
+    - nvidia
+    - ollama
+    - storage
+    - samba
+    - backup
