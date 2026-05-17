@@ -99,3 +99,22 @@
       maxretry = 5
       findtime = 10m
       bantime = 1h  
+      
+- name: Ensure Debian repositories include contrib and non-free
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware"
+    state: present
+
+- name: Ensure Debian security repository includes contrib and non-free
+  ansible.builtin.apt_repository:
+    repo: "deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware"
+    state: present
+
+- name: Ensure Debian updates repository includes contrib and non-free
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware"
+    state: present
+
+- name: Update apt cache after repo changes
+  ansible.builtin.apt:
+    update_cache: yes

@@ -1,0 +1,6 @@
+- name: NVIDIA
+  hosts: debian
+  become: yes
+
+  roles:
+    - nvidia

@@ -1,0 +1,6 @@
+- name: Ollama
+  hosts: debian
+  become: yes
+
+  roles:
+    - ollama

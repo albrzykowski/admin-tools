@@ -1,32 +1,69 @@
-- name: Disable NVIDIA persistence daemon
-  systemd:
+- name: Stop NVIDIA persistence daemon (if exists)
+  ansible.builtin.systemd:
     name: nvidia-persistenced
-    enabled: no
+    enabled: false
     state: stopped
-  ignore_errors: yes
+  failed_when: false
 
-- name: Remove NVIDIA driver
-  apt:
+- name: Disable NVIDIA persistence daemon (safe)
+  ansible.builtin.systemd:
+    name: nvidia-persistenced
+    enabled: false
+    state: stopped
+  failed_when: false
+
+- name: Remove NVIDIA driver packages (explicit list, no globs)
+  ansible.builtin.apt:
     name:
       - nvidia-driver
-      - firmware-misc-nonfree
+      - nvidia-dkms
+      - nvidia-kernel-common
+      - nvidia-kernel-source
+      - nvidia-utils
+      - libnvidia-compute
     state: absent
-    purge: yes
+    purge: true
+    autoremove: true
+  ignore_errors: true
 
-- name: Autoremove unused dependencies
-  apt:
-    autoremove: yes
+- name: Remove NVIDIA DKMS modules
+  ansible.builtin.file:
+    path: /var/lib/dkms/nvidia
+    state: absent
+  failed_when: false
 
-- name: Remove NVIDIA persistence service file if custom
-  file:
+- name: Remove NVIDIA systemd override (if exists)
+  ansible.builtin.file:
     path: /etc/systemd/system/nvidia-persistenced.service
     state: absent
+  failed_when: false
+
+- name: Remove NVIDIA blacklist config (if present)
+  ansible.builtin.file:
+    path: /etc/modprobe.d/blacklist-nvidia.conf
+    state: absent
+  failed_when: false
+
+- name: Remove kernel module leftovers (best effort)
+  ansible.builtin.file:
+    path: /lib/modules/{{ ansible_kernel }}/kernel/drivers/video/nvidia*
+    state: absent
+  failed_when: false
+
+- name: Autoremove unused dependencies
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
 
 - name: Reload systemd daemon
-  systemd:
-    daemon_reload: yes
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Rebuild initramfs
+  ansible.builtin.command: update-initramfs -u
+  changed_when: true
 
 - name: Reboot after NVIDIA removal
-  reboot:
+  ansible.builtin.reboot:
     msg: "Reboot after NVIDIA driver removal"
     reboot_timeout: 600

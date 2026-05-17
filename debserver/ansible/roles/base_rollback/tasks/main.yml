@@ -46,3 +46,27 @@
       - nano
     state: absent
     autoremove: yes
+    
+- name: Remove Debian contrib/non-free repositories
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware"
+    state: absent
+
+- name: Remove Debian security repository with contrib/non-free
+  ansible.builtin.apt_repository:
+    repo: "deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware"
+    state: absent
+
+- name: Remove Debian updates repository with contrib/non-free
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware"
+    state: absent
+
+- name: Restore minimal Debian repo (main only)
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ trixie main non-free-firmware"
+    state: present
+
+- name: Update apt cache after repo rollback
+  ansible.builtin.apt:
+    update_cache: yes

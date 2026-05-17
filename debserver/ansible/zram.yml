@@ -1,0 +1,6 @@
+- name: ZRAM
+  hosts: debian
+  become: yes
+
+  roles:
+    - zram

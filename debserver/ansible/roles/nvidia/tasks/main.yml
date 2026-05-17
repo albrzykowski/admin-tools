@@ -1,3 +1,12 @@
+- name: Install kernel build dependencies for NVIDIA
+  ansible.builtin.apt:
+    name:
+      - dkms
+      - build-essential
+      - linux-headers-amd64
+    state: present
+    update_cache: yes
+
 - name: Install NVIDIA driver
   apt:
     name:
@@ -7,11 +16,11 @@
     update_cache: yes
   register: nvidia_install
 
-- name: Reboot after NVIDIA install
-  reboot:
-    msg: "Reboot after NVIDIA driver installation"
-    reboot_timeout: 600
-  when: nvidia_install.changed
+# - name: Reboot after NVIDIA install
+#   reboot:
+#    msg: "Reboot after NVIDIA driver installation"
+#    reboot_timeout: 600
+#  when: nvidia_install.changed
 
 - name: Enable NVIDIA persistence daemon
   systemd:

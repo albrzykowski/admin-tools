@@ -1,0 +1,6 @@
+- name: Storage
+  hosts: debian
+  become: yes
+
+  roles:
+    - storage

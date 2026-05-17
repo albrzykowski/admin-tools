@@ -1,0 +1,6 @@
+- name: Samba
+  hosts: debian
+  become: yes
+
+  roles:
+    - samba

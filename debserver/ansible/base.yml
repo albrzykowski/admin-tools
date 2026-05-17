@@ -1,0 +1,6 @@
+- name: Base system
+  hosts: debian
+  become: yes
+
+  roles:
+    - base
