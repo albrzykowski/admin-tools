@@ -1,0 +1,43 @@
+- name: Stop Ollama service
+  systemd:
+    name: ollama
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove systemd override directory
+  file:
+    path: /etc/systemd/system/ollama.service.d
+    state: absent
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Remove Ollama binary (installed via script)
+  file:
+    path: /usr/local/bin/ollama
+    state: absent
+
+- name: Remove Ollama service file if exists
+  file:
+    path: /etc/systemd/system/ollama.service
+    state: absent
+
+- name: Remove Ollama user data directory
+  file:
+    path: /usr/share/ollama
+    state: absent
+  ignore_errors: yes
+
+- name: Remove Ollama cache/data directory (if present)
+  file:
+    path: ~/.ollama
+    state: absent
+  ignore_errors: yes
+
+- name: Remove curl dependency (optional)
+  apt:
+    name: curl
+    state: absent
+    autoremove: yes

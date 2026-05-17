@@ -1,0 +1,48 @@
+- name: Disable fail2ban service
+  systemd:
+    name: fail2ban
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove fail2ban
+  apt:
+    name: fail2ban
+    state: absent
+    purge: yes
+
+- name: Remove fail2ban config
+  file:
+    path: /etc/fail2ban/jail.local
+    state: absent
+
+- name: Disable nftables service
+  systemd:
+    name: nftables
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Flush nftables rules
+  command: nft flush ruleset
+  ignore_errors: yes
+
+- name: Remove nftables config
+  file:
+    path: /etc/nftables.conf
+    state: absent
+
+- name: Remove unattended upgrades config
+  file:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    state: absent
+
+- name: Remove base packages
+  apt:
+    name:
+      - curl
+      - rsync
+      - htop
+      - nano
+    state: absent
+    autoremove: yes

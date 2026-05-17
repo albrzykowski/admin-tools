@@ -1,0 +1,4 @@
+- name: Remove /data directory
+  file:
+    path: /data
+    state: absent

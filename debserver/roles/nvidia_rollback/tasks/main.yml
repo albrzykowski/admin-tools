@@ -1,0 +1,32 @@
+- name: Disable NVIDIA persistence daemon
+  systemd:
+    name: nvidia-persistenced
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove NVIDIA driver
+  apt:
+    name:
+      - nvidia-driver
+      - firmware-misc-nonfree
+    state: absent
+    purge: yes
+
+- name: Autoremove unused dependencies
+  apt:
+    autoremove: yes
+
+- name: Remove NVIDIA persistence service file if custom
+  file:
+    path: /etc/systemd/system/nvidia-persistenced.service
+    state: absent
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Reboot after NVIDIA removal
+  reboot:
+    msg: "Reboot after NVIDIA driver removal"
+    reboot_timeout: 600

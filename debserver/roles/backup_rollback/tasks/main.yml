@@ -1,0 +1,45 @@
+- name: Stop backup timer
+  systemd:
+    name: backup-data.timer
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Stop backup service
+  systemd:
+    name: backup-data.service
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove systemd timer file
+  file:
+    path: /etc/systemd/system/backup-data.timer
+    state: absent
+
+- name: Remove systemd service file
+  file:
+    path: /etc/systemd/system/backup-data.service
+    state: absent
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Remove backup script
+  file:
+    path: /usr/local/bin/backup-data.sh
+    state: absent
+
+- name: Remove backup directory
+  file:
+    path: /var/backups/ai-server
+    state: absent
+
+- name: Remove backup tools
+  apt:
+    name:
+      - rsync
+      - tar
+    state: absent
+    autoremove: yes

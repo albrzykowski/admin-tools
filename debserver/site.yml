@@ -1,11 +1,22 @@
-- name: AI server setup (Debian headless GPU + storage)
+---
+- name: Base system + storage + NVIDIA
   hosts: debian
   become: yes
+  become_method: sudo
 
   roles:
     - base
-    - nvidia
-    - ollama
     - storage
+    - swap
+    - zram
+    - nvidia
+
+- name: AI services
+  hosts: debian
+  become: yes
+  become_method: sudo
+
+  roles:
+    - ollama
     - samba
     - backup
