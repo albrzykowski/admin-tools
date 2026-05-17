@@ -1,0 +1,6 @@
+- name: Swap rollback only
+  hosts: debian
+  become: yes
+
+  roles:
+    - swap_rollback

@@ -1,0 +1,13 @@
+- name: Full system rollback
+  hosts: debian
+  become: yes
+
+  roles:
+    - nvidia_rollback
+    - ollama_rollback
+    - samba_rollback
+    - backup_rollback
+    - storage_rollback
+    - swap_rollback
+    - zram_rollback
+    - base_rollback

@@ -1,0 +1,6 @@
+- name: ZRAM rollback only
+  hosts: debian
+  become: yes
+
+  roles:
+    - zram_rollback

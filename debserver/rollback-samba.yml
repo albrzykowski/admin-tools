@@ -1,0 +1,6 @@
+- name: Samba rollback only
+  hosts: debian
+  become: yes
+
+  roles:
+    - samba_rollback

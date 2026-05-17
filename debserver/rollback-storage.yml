@@ -1,0 +1,6 @@
+- name: Storage rollback only
+  hosts: debian
+  become: yes
+
+  roles:
+    - storage_rollback

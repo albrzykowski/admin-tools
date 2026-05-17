@@ -1,0 +1,6 @@
+- name: NVIDIA rollback only
+  hosts: debian
+  become: yes
+
+  roles:
+    - nvidia_rollback

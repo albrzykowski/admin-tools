@@ -1,0 +1,6 @@
+- name: Base system rollback only
+  hosts: debian
+  become: yes
+
+  roles:
+    - base_rollback
