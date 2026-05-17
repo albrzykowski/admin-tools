@@ -1,10 +1,38 @@
-- name: Install NVIDIA driver + firmware
+- name: Install NVIDIA driver (stable)
   apt:
     name:
       - nvidia-driver
       - firmware-misc-nonfree
     state: present
+    update_cache: yes
 
-- name: Reboot recommended after NVIDIA install
-  debug:
-    msg: "Reboot system after first NVIDIA driver installation"
+- name: Ensure NVIDIA persistence mode service is enabled
+  copy:
+    dest: /etc/systemd/system/nvidia-persistenced.service
+    content: |
+      [Unit]
+      Description=NVIDIA Persistence Daemon
+
+      [Service]
+      Type=forking
+      ExecStart=/usr/bin/nvidia-persistenced --user root
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable NVIDIA persistence service
+  systemd:
+    name: nvidia-persistenced
+    enabled: yes
+    state: started
+    
+#- name: Install NVIDIA driver + firmware
+#  apt:
+#    name:
+#      - nvidia-driver
+#      - firmware-misc-nonfree
+#    state: present
+#
+#- name: Reboot recommended after NVIDIA install
+#  debug:
+#    msg: "Reboot system after first NVIDIA driver installation"

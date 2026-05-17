@@ -1,19 +1,73 @@
-- name: Install rsync
+- name: Install backup tools
   apt:
-    name: rsync
+    name:
+      - rsync
+      - tar
     state: present
+    update_cache: yes
 
-- name: Create backup script
+- name: Create backup directory
+  file:
+    path: /var/backups/ai-server
+    state: directory
+    mode: '0755'
+
+- name: Create backup script (versioned snapshots)
   copy:
     dest: /usr/local/bin/backup-data.sh
     mode: '0755'
     content: |
       #!/bin/bash
-      rsync -avh /data/ user@backup:/backup/
 
-- name: Create cron job for daily backup
-  cron:
-    name: "daily data backup"
-    hour: "3"
-    minute: "0"
-    job: "/usr/local/bin/backup-data.sh"
+      set -e
+
+      DATE=$(date +%Y-%m-%d_%H-%M-%S)
+      BACKUP_DIR="/var/backups/ai-server"
+
+      mkdir -p "$BACKUP_DIR"
+
+      # create compressed snapshot
+      tar -czf "$BACKUP_DIR/data-$DATE.tar.gz" /data
+
+      # optional remote sync (CHANGE THIS)
+      # rsync -avh "$BACKUP_DIR/" user@backup:/backup/
+
+      # keep last 7 days only
+      find "$BACKUP_DIR" -type f -mtime +7 -delete
+
+- name: Create backup systemd service
+  copy:
+    dest: /etc/systemd/system/backup-data.service
+    content: |
+      [Unit]
+      Description=AI Server Backup
+      Wants=network.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/backup-data.sh
+
+- name: Create backup systemd timer
+  copy:
+    dest: /etc/systemd/system/backup-data.timer
+    content: |
+      [Unit]
+      Description=Run AI server backup daily
+
+      [Timer]
+      OnCalendar=daily
+      Persistent=true
+      RandomizedDelaySec=30m
+
+      [Install]
+      WantedBy=timers.target
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start backup timer
+  systemd:
+    name: backup-data.timer
+    enabled: yes
+    state: started

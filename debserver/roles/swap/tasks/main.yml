@@ -1,0 +1,22 @@
+- name: Create small swap fallback
+  command: fallocate -l 2G /swapfile
+  args:
+    creates: /swapfile
+
+- name: Set swap permissions
+  file:
+    path: /swapfile
+    mode: '0600'
+
+- name: Setup swap
+  command: mkswap /swapfile
+  when: ansible_swaptotal_mb == 0
+
+- name: Enable swap
+  command: swapon /swapfile
+  when: ansible_swaptotal_mb == 0
+
+- name: Persist swap
+  lineinfile:
+    path: /etc/fstab
+    line: '/swapfile none swap sw 0 0'

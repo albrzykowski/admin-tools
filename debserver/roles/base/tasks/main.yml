@@ -7,8 +7,95 @@
   apt:
     name:
       - curl
-      - git
       - rsync
       - htop
-      - vim
+      - nano
     state: present
+
+- name: Install unattended upgrades
+  apt:
+    name: unattended-upgrades
+    state: present
+
+- name: Enable unattended upgrades config
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+- name: Install nftables
+  apt:
+    name: nftables
+    state: present
+
+- name: Enable nftables service
+  systemd:
+    name: nftables
+    enabled: yes
+    state: started
+
+- name: Configure basic firewall rules
+  copy:
+    dest: /etc/nftables.conf
+    content: |
+      flush ruleset
+
+      table inet filter {
+        chain input {
+          type filter hook input priority 0;
+
+          # allow loopback
+          iif lo accept
+
+          # allow established connections
+          ct state established,related accept
+
+          # allow SSH
+          tcp dport 22 accept
+
+          # allow Ollama API
+          tcp dport 11434 accept
+
+          # allow Samba
+          tcp dport { 139, 445 } accept
+
+          # drop everything else
+          drop
+        }
+
+        chain forward {
+          type filter hook forward priority 0;
+          drop
+        }
+
+        chain output {
+          type filter hook output priority 0;
+          accept
+        }
+      }
+
+- name: Apply nftables rules
+  command: nft -f /etc/nftables.conf
+  
+- name: Install fail2ban
+  apt:
+    name: fail2ban
+    state: present
+
+- name: Enable fail2ban service
+  systemd:
+    name: fail2ban
+    enabled: yes
+    state: started
+
+- name: Configure fail2ban for SSH
+  copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      port = ssh
+      maxretry = 5
+      findtime = 10m
+      bantime = 1h  
