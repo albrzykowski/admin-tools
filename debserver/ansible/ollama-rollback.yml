@@ -1,0 +1,6 @@
+- name: Ollama rollback
+  hosts: debian
+  become: yes
+
+  roles:
+    - ollama_rollback

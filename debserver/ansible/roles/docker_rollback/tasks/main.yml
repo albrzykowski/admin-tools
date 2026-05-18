@@ -1,0 +1,12 @@
+- name: Stop Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: stopped
+    enabled: false
+
+- name: Remove Docker package
+  ansible.builtin.apt:
+    name:
+      - docker.io
+    state: absent
+    purge: true

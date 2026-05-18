@@ -14,6 +14,13 @@
     path: /srv/shared
     state: absent
 
+- name: Remove users from shared group
+  user:
+    name: "{{ item.name }}"
+    groups: ""
+    state: present
+  loop: "{{ users_to_remove }}"
+
 - name: Remove shared group
   group:
     name: shared

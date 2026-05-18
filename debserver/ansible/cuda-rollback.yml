@@ -1,0 +1,6 @@
+- name: CUDA rollback
+  hosts: debian
+  become: yes
+
+  roles:
+    - cuda_rollback

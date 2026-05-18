@@ -1,0 +1,40 @@
+- name: Remove NVIDIA driver stack
+  ansible.builtin.apt:
+    name:
+      - nvidia-driver
+    state: absent
+    purge: true
+
+- name: Restore nouveau driver package
+  ansible.builtin.apt:
+    name:
+      - xserver-xorg-video-nouveau
+    state: present
+
+- name: Remove nouveau blacklist file
+  ansible.builtin.file:
+    path: /etc/modprobe.d/blacklist-nouveau.conf
+    state: absent
+
+- name: Rebuild initramfs (all kernels)
+  ansible.builtin.command: update-initramfs -u -k all
+  changed_when: true
+
+- name: Reload kernel module dependencies
+  ansible.builtin.command: depmod -a
+  changed_when: true
+
+- name: Reboot system after rollback
+  ansible.builtin.reboot:
+    msg: "Rebooting after NVIDIA rollback"
+    reboot_timeout: 900
+
+- name: Verify nouveau is active
+  ansible.builtin.command: lsmod | grep nouveau
+  register: nouveau_check
+  changed_when: false
+  failed_when: false
+
+- name: Show nouveau status
+  ansible.builtin.debug:
+    var: nouveau_check.stdout_lines

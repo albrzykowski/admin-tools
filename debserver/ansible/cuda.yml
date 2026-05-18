@@ -1,0 +1,6 @@
+- name: CUDA
+  hosts: debian
+  become: yes
+
+  roles:
+    - cuda

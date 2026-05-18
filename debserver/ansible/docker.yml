@@ -1,0 +1,6 @@
+- name: Docker
+  hosts: debian
+  become: yes
+
+  roles:
+    - docker

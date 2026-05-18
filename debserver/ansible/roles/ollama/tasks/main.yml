@@ -1,0 +1,34 @@
+- name: Allow Ollama port from local network
+  community.general.ufw:
+    rule: allow
+    port: "11434"
+    proto: tcp
+    from_ip: "192.168.0.0/16"
+
+- name: Create Ollama data volume
+  community.docker.docker_volume:
+    name: ollama_data
+
+- name: Pull Ollama image
+  community.docker.docker_image:
+    name: ollama/ollama
+    source: pull
+
+- name: Run Ollama container (GPU enabled)
+  community.docker.docker_container:
+    name: ollama
+    image: ollama/ollama
+    state: started
+    restart_policy: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    device_requests:
+      - driver: nvidia
+        count: all
+        capabilities:
+          - gpu
+    env:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility

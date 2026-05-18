@@ -3,6 +3,13 @@
     name: shared
     state: present
 
+- name: Add users to shared group
+  user:
+    name: "{{ item.name }}"
+    groups: shared
+    append: yes
+  loop: "{{ users }}"
+
 - name: Create base /srv structure
   file:
     path: /srv

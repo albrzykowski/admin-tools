@@ -1,0 +1,6 @@
+- name: Docker rollback
+  hosts: debian
+  become: yes
+
+  roles:
+    - docker_rollback

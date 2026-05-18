@@ -1,0 +1,74 @@
+- name: Enable Debian repositories (deb822)
+  ansible.builtin.deb822_repository:
+    name: debian
+    types: deb
+    uris: http://deb.debian.org/debian
+    suites: trixie
+    components:
+      - main
+      - contrib
+      - non-free
+      - non-free-firmware
+    state: present
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install required base packages
+  ansible.builtin.apt:
+    name:
+      - linux-headers-amd64
+      - dkms
+    state: present
+
+- name: Install NVIDIA driver stack
+  ansible.builtin.apt:
+    name:
+      - nvidia-driver
+    state: present
+
+- name: Blacklist nouveau driver
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/blacklist-nouveau.conf
+    content: |
+      blacklist nouveau
+      options nouveau modeset=0
+    mode: '0644'
+
+- name: Regenerate initramfs (all kernels)
+  ansible.builtin.command: update-initramfs -u -k all
+  changed_when: true
+
+- name: Remove nouveau from current kernel if loaded
+  ansible.builtin.command: modprobe -r nouveau
+  failed_when: false
+  changed_when: false
+
+- name: Check NVIDIA kernel module load
+  ansible.builtin.command: modprobe nvidia
+  register: nvidia_modprobe
+  failed_when: false
+  changed_when: false
+
+- name: Fail if NVIDIA kernel module cannot load
+  ansible.builtin.fail:
+    msg: "NVIDIA kernel module failed to load. Check DKMS / kernel logs."
+  when: nvidia_modprobe.rc != 0
+
+- name: Reboot after NVIDIA driver install
+  ansible.builtin.reboot:
+    msg: "Rebooting after NVIDIA driver install"
+    reboot_timeout: 900
+  when: nvidia_modprobe.rc == 0
+
+- name: Check NVIDIA GPU status
+  ansible.builtin.command: nvidia-smi
+  register: nvidia_smi_output
+  changed_when: false
+  failed_when: false
+
+- name: Show GPU status
+  ansible.builtin.debug:
+    var: nvidia_smi_output.stdout_lines

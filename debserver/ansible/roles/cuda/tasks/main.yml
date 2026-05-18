@@ -1,0 +1,21 @@
+- name: Ensure NVIDIA driver is working before CUDA
+  ansible.builtin.command: nvidia-smi
+  register: nvidia_check
+  changed_when: false
+  failed_when: nvidia_check.rc != 0
+
+- name: Install CUDA toolkit
+  ansible.builtin.apt:
+    name:
+      - nvidia-cuda-toolkit
+    state: present
+
+- name: Verify CUDA compiler
+  ansible.builtin.command: nvcc --version
+  register: cuda_check
+  changed_when: false
+  failed_when: false
+
+- name: Show CUDA version
+  ansible.builtin.debug:
+    var: cuda_check.stdout_lines

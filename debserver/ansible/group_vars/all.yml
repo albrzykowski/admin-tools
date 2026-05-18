@@ -1,3 +1,5 @@
+install_cuda_toolkit: true
+
 users:
   - name: la
   - name: kma
