@@ -1,0 +1,8 @@
+users:
+  - name: la
+  - name: kma
+  
+users_to_remove:
+  - name: kma
+  
+  

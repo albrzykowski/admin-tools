@@ -1,0 +1,19 @@
+- name: Install zram tools
+  apt:
+    name: zram-tools
+    state: present
+    update_cache: yes
+
+- name: Configure zram
+  copy:
+    dest: /etc/default/zramswap
+    content: |
+      ALGO=zstd
+      PERCENT=50
+      PRIORITY=100
+
+- name: Enable zramswap service
+  systemd:
+    name: zramswap
+    enabled: yes
+    state: started

@@ -1,0 +1,6 @@
+- name: Firewall
+  hosts: debian
+  become: yes
+
+  roles:
+    - firewall

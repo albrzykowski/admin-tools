@@ -1,0 +1,31 @@
+- name: Install UFW
+  apt:
+    name: ufw
+    state: present
+
+- name: Allow SSH
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+- name: Allow Borg SSH backup port (same SSH)
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+- name: Allow outgoing traffic
+  ufw:
+    default: allow
+    direction: outgoing
+
+- name: Deny incoming by default
+  ufw:
+    default: deny
+    direction: incoming
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny

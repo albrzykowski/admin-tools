@@ -1,4 +1,20 @@
-- name: Remove /data directory
+- name: Remove borg repositories per user
   file:
-    path: /data
+    path: "/srv/backups/{{ item.name }}"
+    state: absent
+  loop: "{{ users }}"
+
+- name: Remove /srv/backups directory
+  file:
+    path: /srv/backups
+    state: absent
+
+- name: Remove shared directory
+  file:
+    path: /srv/shared
+    state: absent
+
+- name: Remove shared group
+  group:
+    name: shared
     state: absent

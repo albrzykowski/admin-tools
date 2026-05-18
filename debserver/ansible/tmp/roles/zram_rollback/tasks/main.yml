@@ -1,0 +1,21 @@
+- name: Stop zramswap service
+  systemd:
+    name: zramswap
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove zram configuration
+  file:
+    path: /etc/default/zramswap
+    state: absent
+
+- name: Remove zram-tools package
+  apt:
+    name: zram-tools
+    state: absent
+    purge: yes
+
+- name: Autoremove dependencies
+  apt:
+    autoremove: yes

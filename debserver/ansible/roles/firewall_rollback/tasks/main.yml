@@ -1,0 +1,10 @@
+- name: Disable UFW
+  ufw:
+    state: disabled
+
+- name: Remove UFW package
+  apt:
+    name: ufw
+    state: absent
+    autoremove: yes
+    purge: yes

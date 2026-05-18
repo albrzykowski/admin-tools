@@ -6,7 +6,9 @@
   apt:
     name:
       - sudo
+      - vim
       - curl
+      - git
       - htop
       - rsync
       - borgbackup

@@ -1,0 +1,6 @@
+- name: Firewall rollback
+  hosts: debian
+  become: yes
+
+  roles:
+    - firewall_rollback

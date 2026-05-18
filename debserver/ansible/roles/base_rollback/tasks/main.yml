@@ -1,72 +1,34 @@
-- name: Disable fail2ban service
-  systemd:
-    name: fail2ban
-    enabled: no
-    state: stopped
-  ignore_errors: yes
+- name: Remove users from shared group
+  user:
+    name: "{{ item.name }}"
+    groups: ""
+    state: present
+  loop: "{{ users_to_remove }}"
 
-- name: Remove fail2ban
-  apt:
-    name: fail2ban
+- name: Remove users
+  user:
+    name: "{{ item.name }}"
     state: absent
-    purge: yes
+    remove: yes
+  loop: "{{ users_to_remove }}"
 
-- name: Remove fail2ban config
-  file:
-    path: /etc/fail2ban/jail.local
-    state: absent
-
-- name: Disable nftables service
-  systemd:
-    name: nftables
-    enabled: no
-    state: stopped
-  ignore_errors: yes
-
-- name: Flush nftables rules
-  command: nft flush ruleset
-  ignore_errors: yes
-
-- name: Remove nftables config
-  file:
-    path: /etc/nftables.conf
+- name: Remove shared group
+  group:
+    name: shared
     state: absent
 
-- name: Remove unattended upgrades config
-  file:
-    path: /etc/apt/apt.conf.d/20auto-upgrades
-    state: absent
-
-- name: Remove base packages
+- name: Remove packages (SAFE VERSION)
   apt:
     name:
-      - curl
+      - borgbackup
       - rsync
       - htop
-      - nano
+      - curl
     state: absent
     autoremove: yes
-    
-- name: Remove Debian contrib/non-free repositories
-  ansible.builtin.apt_repository:
-    repo: "deb http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware"
-    state: absent
 
-- name: Remove Debian security repository with contrib/non-free
-  ansible.builtin.apt_repository:
-    repo: "deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware"
-    state: absent
-
-- name: Remove Debian updates repository with contrib/non-free
-  ansible.builtin.apt_repository:
-    repo: "deb http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware"
-    state: absent
-
-- name: Restore minimal Debian repo (main only)
-  ansible.builtin.apt_repository:
-    repo: "deb http://deb.debian.org/debian/ trixie main non-free-firmware"
-    state: present
-
-- name: Update apt cache after repo rollback
-  ansible.builtin.apt:
+- name: Clean apt cache
+  apt:
+    autoclean: yes
+    autoremove: yes
     update_cache: yes

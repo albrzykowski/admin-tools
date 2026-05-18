@@ -1,0 +1,15 @@
+- name: Disable swap
+  command: swapoff /swapfile
+  ignore_errors: yes
+
+- name: Remove swap from fstab
+  lineinfile:
+    path: /etc/fstab
+    line: '/swapfile none swap sw 0 0'
+    state: absent
+  ignore_errors: yes
+
+- name: Remove swapfile
+  file:
+    path: /swapfile
+    state: absent

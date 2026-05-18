@@ -1,0 +1,6 @@
+- name: Swap
+  hosts: debian
+  become: yes
+
+  roles:
+    - swap
