@@ -1,28 +1,35 @@
-- name: Remove UFW rule for Ollama port
+- name: Stop Open WebUI
+  community.docker.docker_container:
+    name: open-webui
+    state: absent
+    force_kill: true
+
+- name: Stop Ollama container
+  community.docker.docker_container:
+    name: ollama
+    state: absent
+    force_kill: true
+
+- name: Remove Docker network
+  community.docker.docker_network:
+    name: llm_net
+    state: absent
+
+- name: Remove volume
+  community.docker.docker_volume:
+    name: ollama_data
+    state: absent
+
+- name: Remove UFW rule Ollama
   community.general.ufw:
     rule: deny
     port: "11434"
     proto: tcp
     from_ip: "192.168.0.0/16"
 
-- name: Stop Ollama container
-  community.docker.docker_container:
-    name: ollama
-    state: stopped
-    force_kill: true
-
-- name: Remove Ollama container
-  community.docker.docker_container:
-    name: ollama
-    state: absent
-
-- name: Remove Ollama image
-  community.docker.docker_image:
-    name: ollama/ollama
-    state: absent
-    force_absent: true
-
-- name: Remove Ollama volume
-  community.docker.docker_volume:
-    name: ollama_data
-    state: absent
+- name: Remove UFW rule WebUI
+  community.general.ufw:
+    rule: deny
+    port: "3000"
+    proto: tcp
+    from_ip: "192.168.0.0/16"

@@ -1,34 +1,119 @@
-- name: Allow Ollama port from local network
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - curl
+    state: present
+    update_cache: true
+
+- name: Add NVIDIA GPG key
+  ansible.builtin.shell: |
+    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | \
+    gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+- name: Add NVIDIA repository
+  ansible.builtin.shell: |
+    curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+  args:
+    creates: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+- name: Install NVIDIA container toolkit
+  ansible.builtin.apt:
+    name:
+      - nvidia-container-toolkit
+    state: present
+    update_cache: true
+
+- name: Configure NVIDIA runtime for Docker
+  ansible.builtin.command:
+    cmd: nvidia-ctk runtime configure --runtime=docker
+
+- name: Restart Docker
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+
+- name: Create Docker network
+  community.docker.docker_network:
+    name: llm_net
+
+- name: Create Ollama volume
+  community.docker.docker_volume:
+    name: ollama_data
+
+- name: Allow Ollama API from LAN
   community.general.ufw:
     rule: allow
     port: "11434"
     proto: tcp
     from_ip: "192.168.0.0/16"
 
-- name: Create Ollama data volume
-  community.docker.docker_volume:
-    name: ollama_data
+- name: Allow WebUI from LAN
+  community.general.ufw:
+    rule: allow
+    port: "3000"
+    proto: tcp
+    from_ip: "192.168.0.0/16"
 
-- name: Pull Ollama image
-  community.docker.docker_image:
-    name: ollama/ollama
-    source: pull
-
-- name: Run Ollama container (GPU enabled)
+- name: Run Ollama container (GTX 1660 optimized)
   community.docker.docker_container:
     name: ollama
-    image: ollama/ollama
+    image: ollama/ollama # ollama/ollama:0.30.0-rc5
     state: started
     restart_policy: always
+    networks:
+      - name: llm_net
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     device_requests:
       - driver: nvidia
-        count: all
         capabilities:
           - gpu
+    shm_size: "1G"
+    ulimits:
+      - nofile:65536:65536
+      - memlock:-1:-1
     env:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      OLLAMA_KEEP_ALIVE: "24h"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_FLASH_ATTENTION: "0"
+      OLLAMA_CONTEXT_LENGTH: "2048"
+
+- name: Run Open WebUI
+  community.docker.docker_container:
+    name: open-webui
+    image: ghcr.io/open-webui/open-webui:main
+    state: started
+    restart_policy: always
+    networks:
+      - name: llm_net
+    ports:
+      - "3000:8080"
+    env:
+      OLLAMA_BASE_URL: "http://ollama:11434"
+
+- name: Wait for Ollama API
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 11434
+    timeout: 120
+
+- name: Pull CodeLlama 7B model
+  community.docker.docker_container_exec:
+    container: ollama
+    command: ollama pull codellama:7b-instruct-q4_K_M
+
+- name: Warmup CodeLlama model
+  community.docker.docker_container_exec:
+    container: ollama
+    command: >
+      ollama run codellama:7b-instruct-q4_K_M "hello"
