@@ -4,3 +4,4 @@
 
   roles:
     - storage_rollback
+    when: remove_backups_dirs | default(false)

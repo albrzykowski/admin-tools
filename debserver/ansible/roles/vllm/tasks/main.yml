@@ -1,0 +1,91 @@
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - curl
+    state: present
+    update_cache: true
+
+- name: Install NVIDIA container toolkit
+  ansible.builtin.apt:
+    name:
+      - nvidia-container-toolkit
+    state: present
+    update_cache: true
+
+- name: Configure Docker NVIDIA runtime
+  ansible.builtin.command:
+    cmd: nvidia-ctk runtime configure --runtime=docker
+
+- name: Restart Docker
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+
+- name: Create Docker network
+  community.docker.docker_network:
+    name: llm_net
+
+- name: Create HuggingFace cache volume
+  community.docker.docker_volume:
+    name: hf_cache
+
+- name: Allow vLLM API (LAN only)
+  community.general.ufw:
+    rule: allow
+    port: "8000"
+    proto: tcp
+    from_ip: "192.168.0.0/16"
+
+- name: Run vLLM container (low VRAM config)
+  community.docker.docker_container:
+    name: vllm
+    image: vllm/vllm-openai:v0.8.5
+    state: started
+    restart_policy: unless-stopped
+
+    networks:
+      - name: llm_net
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+
+    device_requests:
+      - driver: nvidia
+        capabilities:
+          - gpu
+
+    shm_size: "4G"
+
+    ulimits:
+      - nofile:65536:65536
+      - memlock:-1:-1
+
+    env:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+
+    command: >
+      --model Qwen/Qwen2.5-Coder-7B-Instruct-GPTQ
+      --host 0.0.0.0
+      --port 8000
+      --max-model-len 2048
+      --gpu-memory-utilization 0.85
+      --max-num-seqs 1
+      --enable-auto-tool-choice
+      --tool-call-parser hermes
+
+- name: Wait for vLLM API
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 8000
+    timeout: 300
+
+- name: Verify API
+  ansible.builtin.uri:
+    url: http://127.0.0.1:8000/v1/models
+    method: GET
+    status_code: 200

@@ -1,0 +1,6 @@
+- name: vLLM
+  hosts: debian
+  become: yes
+
+  roles:
+    - vllm

@@ -1,0 +1,32 @@
+- name: Stop InfluxDB container
+  community.docker.docker_compose_v2:
+    project_src: "{{ influxdb_dir }}"
+    state: absent
+
+- name: Remove docker network
+  community.docker.docker_network:
+    name: influxdb
+    state: absent
+
+- name: Remove InfluxDB directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ influxdb_dir }}/data"
+    - "{{ influxdb_dir }}/config"
+    - "{{ influxdb_dir }}"
+
+- name: Remove InfluxDB port from firewall
+  community.general.ufw:
+    rule: deny
+    port: "8086"
+    proto: tcp
+    from_ip: "192.168.0.0/16"    
+
+- name: Optionally stop Docker
+  systemd:
+    name: docker
+    state: stopped
+    enabled: false
+  when: stop_docker | default(false)

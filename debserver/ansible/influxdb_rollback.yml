@@ -1,0 +1,6 @@
+- name: InfluxDB rollback
+  hosts: local
+  become: yes
+
+  roles:
+    - influxdb rollback

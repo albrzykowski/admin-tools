@@ -1,4 +1,14 @@
 install_cuda_toolkit: true
+remove_backups_dir: false
+
+influxdb_dir: /opt/influxdb
+influxdb_image: influxdb:2.7
+influxdb_user: admin
+influxdb_password: superhaslo123
+influxdb_org: my-org
+influxdb_bucket: my-bucket
+influxdb_retention: 3h
+influxdb_token: my-super-secret-token
 
 users:
   - name: la

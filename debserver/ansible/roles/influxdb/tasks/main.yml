@@ -1,0 +1,77 @@
+- name: Enable docker
+  systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ influxdb_dir }}"
+    - "{{ influxdb_dir }}/data"
+    - "{{ influxdb_dir }}/config"
+
+- name: Create docker network
+  community.docker.docker_network:
+    name: influxdb
+    driver: bridge
+
+- name: Deploy docker compose
+  copy:
+    dest: "{{ influxdb_dir }}/docker-compose.yml"
+    mode: "0644"
+    content: |
+      services:
+        influxdb:
+          image: {{ influxdb_image }}
+          container_name: influxdb
+          hostname: influxdb
+          restart: always
+
+          ports:
+            - "8086:8086"
+
+          environment:
+            - DOCKER_INFLUXDB_INIT_MODE=setup
+            - DOCKER_INFLUXDB_INIT_USERNAME={{ influxdb_user }}
+            - DOCKER_INFLUXDB_INIT_PASSWORD={{ influxdb_password }}
+            - DOCKER_INFLUXDB_INIT_ORG={{ influxdb_org }}
+            - DOCKER_INFLUXDB_INIT_BUCKET={{ influxdb_bucket }}
+            - DOCKER_INFLUXDB_INIT_RETENTION={{ influxdb_retention }}
+            - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN={{ influxdb_token }}
+
+          volumes:
+            - ./data:/var/lib/influxdb2
+            - ./config:/etc/influxdb2
+
+          networks:
+            - influxdb
+
+      networks:
+        influxdb:
+          external: true
+
+- name: Start InfluxDB
+  community.docker.docker_compose_v2:
+    project_src: "{{ influxdb_dir }}"
+    state: present
+
+- name: Allow InfluxDB port in firewall
+  community.general.ufw:
+    rule: allow
+    port: "8086"
+    proto: tcp
+    from_ip: "192.168.0.0/16"
+
+- name: Wait for InfluxDB to be ready
+  uri:
+    url: "http://localhost:8086/health"
+    method: GET
+    status_code: 200
+  register: influx_health
+  retries: 10
+  delay: 5
+  until: influx_health.status == 200

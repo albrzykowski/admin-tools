@@ -1,0 +1,6 @@
+- name: InfluxDB
+  hosts: local
+  become: yes
+
+  roles:
+    - influxdb

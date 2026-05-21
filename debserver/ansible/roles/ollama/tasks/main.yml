@@ -64,7 +64,7 @@
     name: ollama
     image: ollama/ollama # ollama/ollama:0.30.0-rc5
     state: started
-    restart_policy: always
+    restart_policy: unless-stopped
     networks:
       - name: llm_net
     ports:
@@ -93,7 +93,7 @@
     name: open-webui
     image: ghcr.io/open-webui/open-webui:main
     state: started
-    restart_policy: always
+    restart_policy: unless-stopped
     networks:
       - name: llm_net
     ports:
@@ -107,13 +107,24 @@
     port: 11434
     timeout: 120
 
-- name: Pull CodeLlama 7B model
+# - name: Pull CodeLlama 7B model
+#   community.docker.docker_container_exec:
+#     container: ollama
+#     command: ollama pull codellama:7b-instruct-q4_K_M
+
+# - name: Warmup CodeLlama model
+#   community.docker.docker_container_exec:
+#     container: ollama
+#     command: >
+#       ollama run codellama:7b-instruct-q4_K_M "hello"
+
+- name: Pull Qwen 7B model
   community.docker.docker_container_exec:
     container: ollama
-    command: ollama pull codellama:7b-instruct-q4_K_M
+    command: ollama pull llama3.1:8b
 
-- name: Warmup CodeLlama model
+- name: Warmup Qwen model
   community.docker.docker_container_exec:
     container: ollama
     command: >
-      ollama run codellama:7b-instruct-q4_K_M "hello"
+      ollama run llama3.1:8b "hello"      
