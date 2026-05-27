@@ -1,0 +1,8 @@
+lxpolkit &
+dunst -config ~/.config/openbox/dunst/dunstrc &
+picom --config ~/.config/openbox/picom/picom.conf -b &
+feh --bg-fill ~/.config/openbox/wallpaper/bluemountain.jpg &
+
+killall -q polybar
+polybar -c ~/.config/openbox/polybar/config.ini &
+
