@@ -7,6 +7,7 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PACKAGES=(
   xorg
+  xinit
   openbox
   obconf
   obmenu
@@ -26,6 +27,7 @@ PACKAGES=(
   volumeicon-alsa
   lxterminal
   policykit-1-gnome
+  dbus-x11
   fonts-dejavu
   xsettingsd
 )

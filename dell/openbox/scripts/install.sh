@@ -65,5 +65,10 @@ if command -v xrdb >/dev/null 2>&1; then
   xrdb -merge "$HOME/.Xresources"
 fi
 
+XS_DIR="/usr/share/xsessions"
+
+sudo mkdir -p "$XS_DIR"
+sudo cp -f "$REPO_DIR/configs/xsessions/openbox.desktop" "$XS_DIR/openbox.desktop"
+
 echo ""
 echo "Done."

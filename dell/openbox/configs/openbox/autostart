@@ -46,9 +46,11 @@ wait_for NetworkManager 5
 
 run_if_exists picom --config ~/.config/picom/picom.conf
 
+run_if_exists xsettingsd
+
 run_if_exists tint2
 
-run_if_exists volumeicon
+run_if_exists volumeicon-alsa
 
 run_if_exists pcmanfm --desktop
 

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Openbox
+Comment=Lightweight window manager
+Exec=openbox-session
+TryExec=openbox-session
+Type=Application
