@@ -25,8 +25,8 @@ mkdir -p "$CONFIG_DIR"
 cp -a "$SCRIPT_DIR/config/." "$CONFIG_DIR/"
 
 # Theme
-mkdir -p ~/.themes
-cp -r "$SCRIPT_DIR/config/themes/Simply_Circles_Dark" ~/.themes/
+# mkdir -p ~/.themes
+# cp -r "$SCRIPT_DIR/config/themes/Simply_Circles_Dark" ~/.themes/
 
 # nwg-look
 desktop_file="$HOME/.local/share/applications/nwg-look.desktop"
