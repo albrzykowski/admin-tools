@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+xsetroot -cursor_name left_ptr
+
+if command -v dbus-run-session >/dev/null 2>&1; then
+  exec dbus-run-session openbox-session
+elif command -v dbus-launch >/dev/null 2>&1; then
+  exec dbus-launch openbox-session
+else
+  exec openbox-session
+fi
